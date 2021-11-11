@@ -32,11 +32,15 @@ class LikesController extends Controller
             $like->post_id = $postId;
             $like->save();
         } else {
+            $like = Like::all()
+            ->where('user_id', '=', $req->user_id)
+            ->where('post_id','=',$postId)
+            ->first()->delete();
             return response()->json([
                 'status' => 'false',
                 'like' => $like,
                 'req' => $req->user_id,
-                'msg' => "이미 좋아요 하셨어요",
+                'msg' => "좋아요 해제됬습니다",
             ], 200);
         }
         return response()->json([
