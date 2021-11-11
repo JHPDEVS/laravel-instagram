@@ -37,13 +37,19 @@ class PostsController extends Controller
             DB::raw('users.id, COUNT(posts.id) as count')
         )->count();
 
-
+        $commentsCount = DB::table('comments')
+        ->join('users', 'comments.user_id', '=', 'users.id')
+        ->where('users.id', '=', $userId)
+        ->select(
+            DB::raw('users.id, COUNT(comments.id) as count')
+        )->count();
 
 
         $res = response()->json([
             'status' => 'success',
             'user' => $user,
-            'postCount' => $postsCount
+            'postCount' => $postsCount,
+            'commentsCount' => $commentsCount
         ],200);
 
         return $res;
@@ -58,7 +64,7 @@ class PostsController extends Controller
             posts.content, posts.user_id, posts.image,
             posts.updated_at, users.name'))
         ->orderBy('comments_count', 'desc')
-        ->paginate(10);
+        ->paginate(3);
 
         $commentsCount = DB::table('comments')
         ->join('posts', 'posts.id', '=', 'comments.post_id')
@@ -86,6 +92,33 @@ class PostsController extends Controller
             }
         }
 
+        $likesCount = DB::table('likes')
+        ->join('posts', 'posts.id', '=', 'likes.post_id')
+        ->select(
+            DB::raw('posts.id, COUNT(likes.id) as count')
+        )->groupBy('posts.id')->orderBy('posts.created_at', 'desc')
+        ->get();
+
+        $i = 0;
+        $flag = true;
+
+        foreach($posts as $row) {
+            $flag = true;
+
+            for ($i = 0; $i < $likesCount->count(); $i++) {
+                if ($row->id == $likesCount[$i]->id) {
+                    $row->likesCount = $likesCount[$i]->count;
+                    $flag = false;
+                    break;
+                }
+            }
+
+            if ($flag) {
+                $row->likesCount = null;
+            }
+        }
+
+        
         $res = response()->json([
             'status' => 'success',
             'posts' => $posts
@@ -102,7 +135,7 @@ class PostsController extends Controller
             DB::raw('posts.id, posts.title,
             posts.content, posts.user_id, posts.image,
             posts.updated_at, users.name'),
-        )->orderBy('posts.id', 'desc')->paginate(10);
+        )->orderBy('posts.id', 'desc')->paginate(3);
         
           $commentsCount = DB::table('comments')
         ->join('posts', 'posts.id', '=', 'comments.post_id')
@@ -130,7 +163,31 @@ class PostsController extends Controller
             }
         }
         
-        
+        $likesCount = DB::table('likes')
+        ->join('posts', 'posts.id', '=', 'likes.post_id')
+        ->select(
+            DB::raw('posts.id, COUNT(likes.id) as count')
+        )->groupBy('posts.id')->orderBy('posts.created_at', 'desc')
+        ->get();
+
+        $i = 0;
+        $flag = true;
+
+        foreach($posts as $row) {
+            $flag = true;
+
+            for ($i = 0; $i < $likesCount->count(); $i++) {
+                if ($row->id == $likesCount[$i]->id) {
+                    $row->likesCount = $likesCount[$i]->count;
+                    $flag = false;
+                    break;
+                }
+            }
+
+            if ($flag) {
+                $row->likesCount = null;
+            }
+        }
         $res = response()->json([
             'status' => 'success',
             'posts' => $posts
