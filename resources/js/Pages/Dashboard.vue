@@ -2,8 +2,6 @@
     <app-layout title="Dashboard">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Dashboard
-                {{ $page.props.user.name }}
                 {{ username }}
             </h2>
         </template>
@@ -47,3 +45,4 @@
         },
     })
 </script>
+
