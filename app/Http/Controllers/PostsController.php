@@ -27,19 +27,19 @@ class PostsController extends Controller
         return $fileName;
     }
 
-    public function getUserInfo($userId) {
-        $user = User::find($userId);
+    public function getUserInfo($user_name) {
+        $user = User::all()->where('name','=',$user_name)->first();
 
         $postsCount = DB::table('posts')
         ->join('users', 'posts.user_id', '=', 'users.id')
-        ->where('users.id', '=', $userId)
+        ->where('users.name', '=', $user_name)
         ->select(
             DB::raw('users.id, COUNT(posts.id) as count')
         )->count();
 
         $commentsCount = DB::table('comments')
         ->join('users', 'comments.user_id', '=', 'users.id')
-        ->where('users.id', '=', $userId)
+        ->where('users.name', '=', $user_name)
         ->select(
             DB::raw('users.id, COUNT(comments.id) as count')
         )->count();
@@ -128,9 +128,12 @@ class PostsController extends Controller
     }
 
     public function nameIndex($id) {
+
+        $user_id = DB::table('users')->where('name', $id)->first()->id;
+
         $posts = DB::table('posts')
         ->join('users','users.id','=','posts.user_id')
-        ->where('users.id', '=', $id)
+        ->where('posts.user_id', '=', $user_id)
         ->select(
             DB::raw('posts.id, posts.title,
             posts.content, posts.user_id, posts.image,
@@ -190,7 +193,8 @@ class PostsController extends Controller
         }
         $res = response()->json([
             'status' => 'success',
-            'posts' => $posts
+            'posts' => $posts,
+            'user_id' => $user_id,
         ],200);
 
         return $res;
