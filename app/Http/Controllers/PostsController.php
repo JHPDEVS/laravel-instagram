@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManagerStatic;
 
 class PostsController extends Controller
 {
@@ -22,8 +23,8 @@ class PostsController extends Controller
         $fileName = $nameWithoutExtension . '_' . time() . '.' . $extension;
 
         // 파일의 경로와 이름 지정
-        $req->file('imageFile')->storeAs('public/images', $fileName);
-
+       // $req->file('imageFile')->storeAs('public/images', $fileName);
+        ImageManagerStatic::make($req->imageFile->getRealPath())->resize(900, 900)->save( public_path('storage/images/' . $fileName ));
         return $fileName;
     }
 
@@ -220,7 +221,7 @@ class PostsController extends Controller
         $post->title = $req->title;
         $post->content = $req->content;
         if ($req->file('imageFile')) {
-            $post->image = $this->uploadPostImage($req);
+            $post->image =$this->uploadPostImage($req);
         }
         $post->save();
 
